@@ -19,7 +19,6 @@ class Bob:
 
         @server.route('/alice', methods=['POST'])
         def _get_garbled_circuit_data():
-
             self._garbled_gates = json.loads(request.form['garbled-gates'])
             self._alice_input_labels = json.loads(request.form['alice-input-labels'])
             self._alice_input_pbits = json.loads(request.form['alice-input-pbits'])

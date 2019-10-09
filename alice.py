@@ -1,9 +1,13 @@
 import pickle
+import json
 import random
 from utils import encrypt, get_label
 from circuit import LogicCircuit
+from config import ADDRESS, PORT
+import requests
 
 INPUT_CIRCUIT_FILENAME = 'input_circuit.json'
+URL = "http://{0}:{1}/alice".format(ADDRESS, PORT)
 
 
 class Alice:
@@ -15,14 +19,25 @@ class Alice:
         self._input = self._get_input()
         self._input_labels = self._get_input_labels()
         self._input_pbits = self._get_input_pbits()
+        self._send_garbled_circuit_data()
+
+    def _send_garbled_circuit_data(self):
+        data = {
+            'garbled-gates': json.dumps(self._garbled_gates),
+            'alice-input-labels': json.dumps(self._input_labels),
+            'alice-input-pbits': json.dumps(self._input_pbits)
+        }
+
+        r = requests.post(url=URL, data=data)
+        print(r.text)
 
     def _get_input(self):
-        return {wire: random.randint(0, 1) for wire in self.circuit.alice_input}
+        return {wire: random.randint(0, 1) for wire in self.circuit.alice_input_wires}
 
     def _get_input_labels(self):
         input_labels = dict()
         for wire, bit in self._input.items():
-            input_labels.update({wire: self._wire_labels[wire][bit]})
+            input_labels.update({wire: self._wire_labels[wire][bit].decode()})
         return input_labels
 
     def _get_input_pbits(self):
@@ -53,9 +68,9 @@ class Alice:
                 for input_bit in (0, 1):
                     label = self._wire_labels[input_wire][input_bit]
                     location = self._p_bits[input_wire][input_bit]
-                    output = gate.evaluate(input_bit)
-                    msg = pickle.dumps(output)
-                    garbled_gate[location] = encrypt(msg, label)
+                    output_bit = gate.evaluate(input_bit)
+                    msg = pickle.dumps(output_bit)
+                    garbled_gate[location] = encrypt(msg, label).decode()
 
             else:
                 input_wire1 = gate.input_wires[0]
@@ -71,9 +86,9 @@ class Alice:
                         p_bit2 = self._p_bits[input_wire2][input_bit2]
                         location = 2 * p_bit1 + p_bit2
 
-                        output = gate.evaluate(input_bit1, input_bit2)
-                        msg = pickle.dumps(output)
-                        garbled_gate[location] = encrypt(encrypt(msg, label1), label2)
+                        output_bit = gate.evaluate(input_bit1, input_bit2)
+                        msg = pickle.dumps(output_bit)
+                        garbled_gate[location] = encrypt(encrypt(msg, label1), label2).decode()
 
             garbled_gates.update({gate.id: garbled_gate})
 

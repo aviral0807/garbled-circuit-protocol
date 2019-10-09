@@ -6,6 +6,7 @@ class LogicGate:
         self.name = name
         self.input_wires = input_wires
         self.output_wire = output_wire
+        self.id = self.output_wire
 
         switch = {
             "OR": lambda b1, b2: b1 or b2,
@@ -25,13 +26,13 @@ class LogicCircuit:
             json_circuit = json.load(input_circuit)
 
         self.name = json_circuit['name']
-        self.alice_input = json_circuit['alice']
-        self.bob_input = json_circuit['bob']
-        self.output = json_circuit['out']
+        self.alice_input_wires = json_circuit['alice']
+        self.bob_input_wires = json_circuit['bob']
+        self.output_wires = json_circuit['out']
         self.gates = list()
 
         gates = json_circuit['gates']
-        wires = self.alice_input + self.bob_input + self.output
+        wires = self.alice_input_wires + self.bob_input_wires + self.output_wires
 
         for gate in gates:
             gate_name = gate['type']
