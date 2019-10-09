@@ -3,10 +3,9 @@ import json
 import random
 from utils import encrypt, get_label
 from circuit import LogicCircuit
-from config import ADDRESS, PORT
+from config import ADDRESS, PORT, INPUT_CIRCUIT_FILENAME
 import requests
 
-INPUT_CIRCUIT_FILENAME = 'input_circuit.json'
 URL = "http://{0}:{1}/alice".format(ADDRESS, PORT)
 
 

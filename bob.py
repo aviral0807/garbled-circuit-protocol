@@ -1,9 +1,7 @@
 from circuit import LogicCircuit
 from flask import Flask, request
-from config import ADDRESS, PORT
+from config import ADDRESS, PORT, INPUT_CIRCUIT_FILENAME
 import json
-
-INPUT_CIRCUIT_FILENAME = 'input_circuit.json'
 
 
 class Bob:
