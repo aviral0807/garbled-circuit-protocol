@@ -20,23 +20,41 @@ class Alice:
         self._input_pbits = self._get_input_pbits()
         self._send_garbled_circuit_data()
 
+        print(self._input.values())
+
     def _send_garbled_circuit_data(self):
+        # print(self._wire_labels)
+        # print(self._p_bits)
         data = {
             'garbled-gates': json.dumps(self._garbled_gates),
             'alice-input-labels': json.dumps(self._input_labels),
-            'alice-input-pbits': json.dumps(self._input_pbits)
+            'alice-input-pbits': json.dumps(self._input_pbits),
+
+            ##########
+            'wire-labels': json.dumps(self._wire_labels),
+            'p-bits': json.dumps(self._p_bits)
+            ##########
+
         }
 
-        r = requests.post(url=URL, data=data)
-        print(r.text)
+        requests.post(url=URL, data=data)
 
     def _get_input(self):
-        return {wire: random.randint(0, 1) for wire in self.circuit.alice_input_wires}
+        while True:
+            alice_input = list(map(int, input().split()))
+            try:
+                assert (len(alice_input) == len(self.circuit.alice_input_wires))
+            except AssertionError:
+                print("Alice input length doesn't match\nPlease try again\n")
+            else:
+                break
+
+        return {self.circuit.alice_input_wires[i]: alice_input[i] for i in range(len(self.circuit.alice_input_wires))}
 
     def _get_input_labels(self):
         input_labels = dict()
         for wire, bit in self._input.items():
-            input_labels.update({wire: self._wire_labels[wire][bit].decode()})
+            input_labels.update({wire: self._wire_labels[wire][bit]})
         return input_labels
 
     def _get_input_pbits(self):
@@ -54,7 +72,7 @@ class Alice:
         return p_bits
 
     def _generate_wire_labels(self):
-        return {wire: [get_label(), get_label()] for wire in self.circuit.wires}
+        return {wire: [get_label().decode(), get_label().decode()] for wire in self.circuit.wires}
 
     def _get_garbled_gates(self):
         garbled_gates = dict()
@@ -62,18 +80,27 @@ class Alice:
 
             if gate.name == 'NOT':
                 input_wire = gate.input_wires[0]
+                output_wire = gate.output_wire
+
                 garbled_gate = [None] * 2
 
                 for input_bit in (0, 1):
                     label = self._wire_labels[input_wire][input_bit]
                     location = self._p_bits[input_wire][input_bit]
                     output_bit = gate.evaluate(input_bit)
-                    msg = pickle.dumps(output_bit)
+
+                    output_label = self._wire_labels[output_wire][output_bit]
+                    output_pbit = self._p_bits[output_wire][output_bit]
+
+                    msg = pickle.dumps((output_label, output_pbit))
+                    # msg = pickle.dumps(output_label)
+
                     garbled_gate[location] = encrypt(msg, label).decode()
 
             else:
                 input_wire1 = gate.input_wires[0]
                 input_wire2 = gate.input_wires[1]
+                output_wire = gate.output_wire
 
                 garbled_gate = [None] * 4
                 for input_bit1 in (0, 1):
@@ -84,9 +111,14 @@ class Alice:
                         p_bit1 = self._p_bits[input_wire1][input_bit1]
                         p_bit2 = self._p_bits[input_wire2][input_bit2]
                         location = 2 * p_bit1 + p_bit2
-
                         output_bit = gate.evaluate(input_bit1, input_bit2)
-                        msg = pickle.dumps(output_bit)
+
+                        output_label = self._wire_labels[output_wire][output_bit]
+                        output_pbit = self._p_bits[output_wire][output_bit]
+
+                        msg = pickle.dumps((output_label, output_pbit))
+                        # msg = pickle.dumps(output_label)
+
                         garbled_gate[location] = encrypt(encrypt(msg, label1), label2).decode()
 
             garbled_gates.update({gate.id: garbled_gate})

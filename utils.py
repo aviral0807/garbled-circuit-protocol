@@ -1,4 +1,5 @@
 from cryptography.fernet import Fernet
+import pickle
 
 
 def encrypt(data, key):
@@ -13,3 +14,7 @@ def decrypt(data, key):
 
 def get_label():
     return Fernet.generate_key()
+
+
+def keys_to_int(x):
+    return {int(k): v for k, v in x}
