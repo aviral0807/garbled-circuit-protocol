@@ -15,11 +15,10 @@ class Bob:
         self._alice_input_pbits = None
         self._bob_input_labels = None
         self._bob_input_pbits = None
+
+        #################################
         self.wire_labels = None
-
-        print(self._input.values())
-
-        # server = Flask(__name__)
+        #################################
 
         @server.route('/alice', methods=['POST', 'GET'])
         def _get_garbled_circuit_data():
@@ -27,6 +26,7 @@ class Bob:
             self._alice_input_labels = json.loads(request.form['alice-input-labels'], object_pairs_hook=keys_to_int)
             self._alice_input_pbits = json.loads(request.form['alice-input-pbits'], object_pairs_hook=keys_to_int)
 
+            ##############################
             wire_labels = json.loads(request.form['wire-labels'], object_pairs_hook=keys_to_int)
             self.wire_labels = wire_labels
 
@@ -38,38 +38,27 @@ class Bob:
             for wire, bit in self._input.items():
                 self._bob_input_labels.update({wire: wire_labels[wire][bit]})
                 self._bob_input_pbits.update({wire: p_bits[wire][bit]})
+            ###############################
 
             self.solve_circuit()
             return "ok"
 
-        # server.run(ADDRESS, PORT)
-
     def _get_input(self):
-
+        print("Enter Bob input bits :")
         while True:
             bob_input = list(map(int, input().split()))
             try:
                 assert (len(bob_input) == len(self.circuit.bob_input_wires))
             except AssertionError:
-                print("Bob input length doesn't match\nPlease try again\n")
+                print("Bob input length doesn't match\nPlease try again!")
             else:
                 break
 
         return {self.circuit.bob_input_wires[i]: bob_input[i] for i in range(len(self.circuit.bob_input_wires))}
 
     def solve_circuit(self):
-        wire_label_table = dict()
-        wire_pbits_table = dict()
-
-        for wire, label in self._alice_input_labels.items():
-            wire_label_table[wire] = label
-        for wire, label in self._bob_input_labels.items():
-            wire_label_table[wire] = label
-
-        for wire, pbit in self._alice_input_pbits.items():
-            wire_pbits_table[wire] = pbit
-        for wire, pbit in self._bob_input_pbits.items():
-            wire_pbits_table[wire] = pbit
+        wire_label_table = {**self._alice_input_labels, **self._bob_input_labels}
+        wire_pbits_table = {**self._alice_input_pbits, **self._bob_input_pbits}
 
         for gate in self.circuit.gates:
             if gate.name == 'NOT':
@@ -107,11 +96,13 @@ class Bob:
                 wire_label_table.update({gate.output_wire: output_label})
                 wire_pbits_table.update({gate.output_wire: output_pbit})
 
+        ################################
         ans = []
         for output_wire in self.circuit.output_wires:
             ans.append(self.wire_labels[output_wire].index(wire_label_table[output_wire]))
 
         print(ans)
+        ################################
 
 
 if __name__ == "__main__":

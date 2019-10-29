@@ -20,32 +20,29 @@ class Alice:
         self._input_pbits = self._get_input_pbits()
         self._send_garbled_circuit_data()
 
-        print(self._input.values())
-
     def _send_garbled_circuit_data(self):
-        # print(self._wire_labels)
-        # print(self._p_bits)
         data = {
             'garbled-gates': json.dumps(self._garbled_gates),
             'alice-input-labels': json.dumps(self._input_labels),
             'alice-input-pbits': json.dumps(self._input_pbits),
 
-            ##########
+            #######################
             'wire-labels': json.dumps(self._wire_labels),
             'p-bits': json.dumps(self._p_bits)
-            ##########
+            #######################
 
         }
 
         requests.post(url=URL, data=data)
 
     def _get_input(self):
+        print("Enter Alice input bits :")
         while True:
             alice_input = list(map(int, input().split()))
             try:
                 assert (len(alice_input) == len(self.circuit.alice_input_wires))
             except AssertionError:
-                print("Alice input length doesn't match\nPlease try again\n")
+                print("Alice input length doesn't match\nPlease try again!")
             else:
                 break
 
@@ -93,7 +90,6 @@ class Alice:
                     output_pbit = self._p_bits[output_wire][output_bit]
 
                     msg = pickle.dumps((output_label, output_pbit))
-                    # msg = pickle.dumps(output_label)
 
                     garbled_gate[location] = encrypt(msg, label).decode()
 
@@ -117,7 +113,6 @@ class Alice:
                         output_pbit = self._p_bits[output_wire][output_bit]
 
                         msg = pickle.dumps((output_label, output_pbit))
-                        # msg = pickle.dumps(output_label)
 
                         garbled_gate[location] = encrypt(encrypt(msg, label1), label2).decode()
 

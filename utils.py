@@ -1,5 +1,4 @@
 from cryptography.fernet import Fernet
-import pickle
 
 
 def encrypt(data, key):
