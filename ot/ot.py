@@ -16,7 +16,7 @@ def moddiv(a, b, n):
     return a * mulinv(b, n) % n
 
 
-def prod(x, G):
+def prod(x):
     p = 1
     for i in x:
         p *= i
@@ -27,7 +27,7 @@ def hasher(b):
     return sha256(b).hexdigest()
 
 
-def lagrange(x, y, G):
+def lagrange(x, y, g):
     assert len(x) == len(y) and len(x) > 0, "Lengths of x and y must equal and non-zero."
     x_len = len(x)
     f = [0] * x_len
@@ -38,18 +38,18 @@ def lagrange(x, y, G):
         for j in range(x_len):
             c = 0
             for k in combinations(combo_list, j):
-                c += prod(map(lambda q: -q, k), G)
+                c += prod(map(lambda q: -q, k))
             partial.append(c)
         d = 1
         for j in range(x_len):
             if j != i:
                 d *= x[i] - x[j]
 
-        partial = map(lambda q: moddiv(q * y[i], d, G), partial)
-        f = [(m + n) % G for m, n in zip(f, partial)]  # also needs % G
+        partial = map(lambda q: moddiv(q * y[i], d, g), partial)
+        f = [(m + n) % g for m, n in zip(f, partial)]  # also needs % G
 
     for i in range(x_len):
-        assert compute_poly(f, x[i], G) == y[i], i
+        assert compute_poly(f, x[i], g) == y[i], i
     return f
 
 

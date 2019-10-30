@@ -26,9 +26,8 @@ def is_sprp(n, b=2):
 
 # lucas probable prime
 # assumes D = 1 (mod 4), (D|n) = -1
-def is_lucas_prp(n, D):
-    P = 1
-    Q = (1 - D) >> 2
+def is_lucas_prp(n, d):
+    q_capital = (1 - d) >> 2
 
     # n+1 = 2**r*s where s is odd
     s = n + 1
@@ -50,32 +49,32 @@ def is_lucas_prp(n, D):
 
     # use the same bit reversal process to calculate the sth Lucas number
     # keep track of q = Q**n as we go
-    U = 0
-    V = 2
+    u = 0
+    v = 2
     q = 1
     # mod_inv(2, n)
     inv_2 = (n + 1) >> 1
     while t > 0:
         if t & 1 == 1:
             # U, V of n+1
-            U, V = ((U + V) * inv_2) % n, ((D * U + V) * inv_2) % n
-            q = (q * Q) % n
+            u, v = ((u + v) * inv_2) % n, ((d * u + v) * inv_2) % n
+            q = (q * q_capital) % n
             t -= 1
         else:
             # U, V of n*2
-            U, V = (U * V) % n, (V * V - 2 * q) % n
+            u, v = (u * v) % n, (v * v - 2 * q) % n
             q = (q * q) % n
             t >>= 1
 
     # double s until we have the 2**r*sth Lucas number
     while r > 0:
-        U, V = (U * V) % n, (V * V - 2 * q) % n
+        u, v = (u * v) % n, (v * v - 2 * q) % n
         q = (q * q) % n
         r -= 1
 
     # primality check
     # if n is prime, n divides the n+1st Lucas number, given the assumptions
-    return U == 0
+    return u == 0
 
 
 # primes less than 212
@@ -125,7 +124,8 @@ def is_prime(n):
 
     # Baillie-PSW
     # this is technically a probabalistic test, but there are no known pseudoprimes
-    if not is_sprp(n): return False
+    if not is_sprp(n):
+        return False
     a = 5
     s = 2
     while legendre(a, n) != n - 1:

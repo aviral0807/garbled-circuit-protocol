@@ -1,5 +1,5 @@
 from circuit import LogicCircuit
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from config import ADDRESS, PORT, INPUT_CIRCUIT_FILENAME
 from utils import keys_to_int, decrypt
 import json
@@ -23,6 +23,15 @@ class Bob:
         self.hashes = None
         self.secret_length = None
         self._output_labels = list()
+        self._output = None
+
+        @server.route('/alice/output', methods=['POST'])
+        def _get_output():
+            self._output = request.json
+            print("Output is")
+            print(self._output)
+
+            return "ok"
 
         @server.route('/alice', methods=['POST'])
         def _get_garbled_circuit_data():
@@ -38,14 +47,14 @@ class Bob:
             self.hashes = json.loads(request.form['hashes'])
             self.secret_length = json.loads(request.form['secret_length'])
 
-            T = []
+            t = []
             for j in range(len(self._ot_request_list)):
                 r = randint(self.pubkey['n'])
                 self.R.append(r)
-                T.append(pow(r, self.pubkey['e'], self.pubkey['n']))  # the encrypted random value
+                t.append(pow(r, self.pubkey['e'], self.pubkey['n']))  # the encrypted random value
 
-            G = next_prime(self.pubkey['n'])
-            f = lagrange(self._ot_request_list, T, G)
+            g = next_prime(self.pubkey['n'])
+            f = lagrange(self._ot_request_list, t, g)
 
             string_f = json.dumps([str(x) for x in f])
 
@@ -53,11 +62,11 @@ class Bob:
 
         @server.route('/alice/ot2', methods=['POST'])
         def _get_oblivious_transfer_data2():
-            G = request.json
-            # print(G)
+            g = request.json
+            # print(g)
             decrypted = []
             for j in range(len(self._ot_request_list)):
-                d = moddiv(G[self._ot_request_list[j]], self.R[j], self.pubkey['n'])
+                d = moddiv(g[self._ot_request_list[j]], self.R[j], self.pubkey['n'])
                 dec_bytes = int_to_bytes(d)
                 decrypted.append(strip_padding(dec_bytes, self.secret_length))
 

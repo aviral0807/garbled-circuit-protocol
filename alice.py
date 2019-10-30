@@ -14,6 +14,7 @@ from ot.ot import *
 URL = "http://{0}:{1}/alice".format(ADDRESS, PORT)
 OURL1 = "http://{0}:{1}/alice/ot1".format(ADDRESS, PORT)
 OURL2 = "http://{0}:{1}/alice/ot2".format(ADDRESS, PORT)
+OUTPUT_URL = "http://{0}:{1}/alice/output".format(ADDRESS, PORT)
 
 
 class Alice:
@@ -30,6 +31,10 @@ class Alice:
         self._output = dict()
 
         self._ot_setup()
+        self._send_output()
+
+    def _send_output(self):
+        requests.post(url=OUTPUT_URL, json=self._output)
 
     def _ot_setup(self):
         (pubkey, private_key) = rsa.newkeys(RSA_bits)
@@ -53,12 +58,12 @@ class Alice:
         string_f = list(map(int, string_f))
         assert len(string_f) == len(self.circuit.bob_input_wires)
 
-        G = []
+        g = []
         for i in range(len(self._ot_messages)):
-            F = pow(compute_poly(string_f, i, self.G), self.private_key.d, self.pubkey.n)
-            G.append((F * bytes_to_int(self._ot_messages[i])) % self.pubkey.n)
+            f = pow(compute_poly(string_f, i, self.G), self.private_key.d, self.pubkey.n)
+            g.append((f * bytes_to_int(self._ot_messages[i])) % self.pubkey.n)
 
-        response = requests.post(url=OURL2, json=G)
+        response = requests.post(url=OURL2, json=g)
 
         self._output_labels = json.loads(response.text, object_pairs_hook=keys_to_int)
 
