@@ -1,11 +1,13 @@
-from circuit import LogicCircuit
-from flask import Flask, request
-from config import ADDRESS, PORT, INPUT_CIRCUIT_FILENAME
-from utils import keys_to_int, decrypt
 import json
 import pickle
-from ot.ot import *
+
+from flask import Flask, request
+
+from circuit import LogicCircuit
+from config import ADDRESS, PORT, INPUT_CIRCUIT_FILENAME
 from ot.next_prime import next_prime
+from ot.ot import *
+from utils import keys_to_int, decrypt
 
 
 class Bob:

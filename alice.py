@@ -1,15 +1,15 @@
-import pickle
 import json
+import pickle
 import random
 
+import requests
 import rsa
 
-from utils import encrypt, get_label, keys_to_int
 from circuit import LogicCircuit
 from config import ADDRESS, PORT, INPUT_CIRCUIT_FILENAME
-import requests
 from ot.next_prime import next_prime
 from ot.ot import *
+from utils import encrypt, get_label, keys_to_int
 
 URL = "http://{0}:{1}/alice".format(ADDRESS, PORT)
 OURL1 = "http://{0}:{1}/alice/ot1".format(ADDRESS, PORT)

@@ -1,6 +1,7 @@
 from hashlib import sha256
 from itertools import combinations
 from random import SystemRandom
+
 from ot.mulinv import mulinv
 
 RSA_bits = 1024
