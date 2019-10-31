@@ -36,7 +36,7 @@ class Bob:
 
             return "ok"
 
-        @server.route('/alice', methods=['POST'])
+        @server.route('/alice/garbled-circuit', methods=['POST'])
         def _get_garbled_circuit_data():
             self._garbled_gates = json.loads(request.form['garbled-gates'], object_pairs_hook=keys_to_int)
 
