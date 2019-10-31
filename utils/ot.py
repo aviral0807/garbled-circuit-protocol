@@ -1,31 +1,7 @@
-from hashlib import sha256
 from itertools import combinations
-from random import SystemRandom
 
-from ot.mulinv import mulinv
-
-RSA_bits = 1024
-
-cryptorand = SystemRandom()
-
-
-def randint(n):
-    return cryptorand.randrange(n)
-
-
-def moddiv(a, b, n):
-    return a * mulinv(b, n) % n
-
-
-def prod(x):
-    p = 1
-    for i in x:
-        p *= i
-    return p
-
-
-def hasher(b):
-    return sha256(b).hexdigest()
+from config import RSA_bits
+from utils.util import mod_div, prod
 
 
 def lagrange(x, y, g):
@@ -46,7 +22,7 @@ def lagrange(x, y, g):
             if j != i:
                 d *= x[i] - x[j]
 
-        partial = map(lambda q: moddiv(q * y[i], d, g), partial)
+        partial = map(lambda q: mod_div(q * y[i], d, g), partial)
         f = [(m + n) % g for m, n in zip(f, partial)]  # also needs % G
 
     for i in range(x_len):

@@ -5,9 +5,10 @@ from flask import Flask, request
 
 from circuit import LogicCircuit
 from config import ADDRESS, PORT, INPUT_CIRCUIT_FILENAME
-from ot.next_prime import next_prime
-from ot.ot import *
-from utils import keys_to_int, decrypt
+from utils.crypto import decrypt, hasher, rand_int
+from utils.next_prime import next_prime
+from utils.ot import *
+from utils.util import keys_to_int
 
 
 class Bob:
@@ -51,7 +52,7 @@ class Bob:
 
             t = []
             for j in range(len(self._ot_request_list)):
-                r = randint(self.pubkey['n'])
+                r = rand_int(self.pubkey['n'])
                 self.R.append(r)
                 t.append(pow(r, self.pubkey['e'], self.pubkey['n']))  # the encrypted random value
 
@@ -68,7 +69,7 @@ class Bob:
             # print(g)
             decrypted = []
             for j in range(len(self._ot_request_list)):
-                d = moddiv(g[self._ot_request_list[j]], self.R[j], self.pubkey['n'])
+                d = mod_div(g[self._ot_request_list[j]], self.R[j], self.pubkey['n'])
                 dec_bytes = int_to_bytes(d)
                 decrypted.append(strip_padding(dec_bytes, self.secret_length))
 

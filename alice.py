@@ -7,9 +7,10 @@ import rsa
 
 from circuit import LogicCircuit
 from config import ADDRESS, PORT, INPUT_CIRCUIT_FILENAME
-from ot.next_prime import next_prime
-from ot.ot import *
-from utils import encrypt, get_label, keys_to_int
+from utils.crypto import encrypt, get_label, hasher
+from utils.next_prime import next_prime
+from utils.ot import *
+from utils.util import keys_to_int
 
 URL = "http://{0}:{1}/alice".format(ADDRESS, PORT)
 OURL1 = "http://{0}:{1}/alice/ot1".format(ADDRESS, PORT)
