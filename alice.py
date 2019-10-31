@@ -12,7 +12,6 @@ from utils.next_prime import next_prime
 from utils.ot import *
 from utils.util import keys_to_int
 
-
 GARBLED_CIRCUIT_URL = "garbled-circuit"
 OT1_URL = "ot1"
 OT2_URL = "ot2"
@@ -36,7 +35,7 @@ class Alice:
         self._send_output()
 
     def _send_output(self):
-        requests.post(url=API_CALL+OUTPUT_URL, json=self._output)
+        requests.post(url=API_CALL + OUTPUT_URL, json=self._output)
 
     def _ot_setup(self):
         (pubkey, private_key) = rsa.newkeys(RSA_bits)
@@ -54,7 +53,7 @@ class Alice:
             "secret_length": json.dumps(len(self._ot_messages[0]))
         }
 
-        response = requests.post(url=API_CALL+OT1_URL, data=data)
+        response = requests.post(url=API_CALL + OT1_URL, data=data)
 
         string_f = json.loads(response.text)
         string_f = list(map(int, string_f))
@@ -65,7 +64,7 @@ class Alice:
             f = pow(compute_poly(string_f, i, self.G), self.private_key.d, self.pubkey.n)
             g.append((f * bytes_to_int(self._ot_messages[i])) % self.pubkey.n)
 
-        response = requests.post(url=API_CALL+OT2_URL, json=g)
+        response = requests.post(url=API_CALL + OT2_URL, json=g)
 
         self._output_labels = json.loads(response.text, object_pairs_hook=keys_to_int)
 
@@ -91,7 +90,7 @@ class Alice:
             'alice-input-pbits': json.dumps(self._input_pbits)
         }
 
-        requests.post(url=API_CALL+GARBLED_CIRCUIT_URL, data=data)
+        requests.post(url=API_CALL + GARBLED_CIRCUIT_URL, data=data)
 
     def _get_input(self):
         print("Enter Alice input bits :")
