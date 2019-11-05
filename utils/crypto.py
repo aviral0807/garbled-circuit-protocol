@@ -17,7 +17,7 @@ def decrypt(data, key):
 
 
 def get_label():
-    return Fernet.generate_key()
+    return Fernet.generate_key().decode()
 
 
 def hasher(b):

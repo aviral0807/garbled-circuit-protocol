@@ -1,7 +1,17 @@
+import json
 from itertools import combinations
 
+import requests
+import rsa
+
+from config import API_CALL
 from config import RSA_bits
-from utils.util import mod_div, prod
+from utils.crypto import hasher
+from utils.next_prime import next_prime
+from utils.util import mod_div, prod, keys_to_int
+
+OT1_URL = "ot1"
+OT2_URL = "ot2"
 
 
 def lagrange(x, y, g):
@@ -48,3 +58,34 @@ def compute_poly(f, x, m):
     for i in range(len(f)):
         y += f[i] * pow(x, len(f) - 1 - i, m)
     return y % m
+
+
+def alice_side_ot(messages):
+    (pubkey, private_key) = rsa.newkeys(RSA_bits)
+    pubkey = pubkey
+    private_key = private_key
+    G = next_prime(pubkey.n)
+
+    hashes = []
+
+    for m in messages:
+        hashes.append(hasher(m))
+    data = {
+        "pubkey": json.dumps({"e": pubkey.e, "n": pubkey.n}),
+        "hashes": json.dumps(hashes),
+        "secret_length": json.dumps(len(messages[0]))
+    }
+
+    response = requests.post(url=API_CALL + OT1_URL, data=data)
+
+    string_f = json.loads(response.text)
+    string_f = list(map(int, string_f))
+    g = []
+    for i in range(len(messages)):
+        f = pow(compute_poly(string_f, i, G), private_key.d, pubkey.n)
+        g.append((f * bytes_to_int(messages[i])) % pubkey.n)
+
+    response = requests.post(url=API_CALL + OT2_URL, json=g)
+    output_labels = json.loads(response.text, object_pairs_hook=keys_to_int)
+
+    return output_labels

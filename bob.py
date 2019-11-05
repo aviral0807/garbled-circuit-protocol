@@ -5,36 +5,33 @@ from flask import Flask, request
 
 from circuit import LogicCircuit
 from config import ADDRESS, PORT, INPUT_CIRCUIT_FILENAME
-from utils.crypto import decrypt, hasher, rand_int
+from utils.crypto import decrypt, rand_int, hasher
 from utils.next_prime import next_prime
-from utils.ot import *
-from utils.util import keys_to_int
+from utils.ot import lagrange, strip_padding, int_to_bytes
+from utils.util import keys_to_int, mod_div
 
 
 class Bob:
     def __init__(self):
         self.circuit = LogicCircuit(INPUT_CIRCUIT_FILENAME)
-        self._garbled_gates = None
         self._input = self._get_input()
+        
+        self._garbled_gates = None
+        
         self._alice_input_labels = None
         self._alice_input_pbits = None
+        
         self._bob_input_labels = dict()
         self._bob_input_pbits = dict()
+        
         self._ot_request_list = self._get_ot_request_list()
-        self.R = []
-        self.pubkey = None
-        self.hashes = None
-        self.secret_length = None
+        self._R = []
+        self._pubkey = None
+        self._hashes = None
+        self._secret_length = None
+        
         self._output_labels = list()
         self._output = None
-
-        @server.route('/alice/output', methods=['POST'])
-        def _get_output():
-            self._output = request.json
-            print("Output is")
-            print(self._output)
-
-            return "ok"
 
         @server.route('/alice/garbled-circuit', methods=['POST'])
         def _get_garbled_circuit_data():
@@ -44,19 +41,27 @@ class Bob:
             self._alice_input_pbits = json.loads(request.form['alice-input-pbits'], object_pairs_hook=keys_to_int)
             return "ok"
 
+        @server.route('/alice/output', methods=['POST'])
+        def _get_output():
+            self._output = request.json
+            print("Output is")
+            print(self._output)
+
+            return "ok"
+
         @server.route('/alice/ot1', methods=['POST'])
         def _get_oblivious_transfer_data1():
-            self.pubkey = json.loads(request.form['pubkey'])
-            self.hashes = json.loads(request.form['hashes'])
-            self.secret_length = json.loads(request.form['secret_length'])
+            self._pubkey = json.loads(request.form['pubkey'])
+            self._hashes = json.loads(request.form['hashes'])
+            self._secret_length = json.loads(request.form['secret_length'])
 
             t = []
             for j in range(len(self._ot_request_list)):
-                r = rand_int(self.pubkey['n'])
-                self.R.append(r)
-                t.append(pow(r, self.pubkey['e'], self.pubkey['n']))  # the encrypted random value
+                r = rand_int(self._pubkey['n'])
+                self._R.append(r)
+                t.append(pow(r, self._pubkey['e'], self._pubkey['n']))  # the encrypted random value
 
-            g = next_prime(self.pubkey['n'])
+            g = next_prime(self._pubkey['n'])
             f = lagrange(self._ot_request_list, t, g)
 
             string_f = json.dumps([str(x) for x in f])
@@ -69,11 +74,11 @@ class Bob:
             # print(g)
             decrypted = []
             for j in range(len(self._ot_request_list)):
-                d = mod_div(g[self._ot_request_list[j]], self.R[j], self.pubkey['n'])
+                d = mod_div(g[self._ot_request_list[j]], self._R[j], self._pubkey['n'])
                 dec_bytes = int_to_bytes(d)
-                decrypted.append(strip_padding(dec_bytes, self.secret_length))
+                decrypted.append(strip_padding(dec_bytes, self._secret_length))
 
-                if hasher(decrypted[j]) != self.hashes[self._ot_request_list[j]]:
+                if hasher(decrypted[j]) != self._hashes[self._ot_request_list[j]]:
                     print("Hashes don't match. Either something messed up or Alice is up to something.")
 
             self.decrypted = [pickle.loads(byte_tuple) for byte_tuple in decrypted]
