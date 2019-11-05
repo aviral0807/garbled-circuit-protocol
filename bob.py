@@ -45,7 +45,7 @@ class Bob:
         def _get_output():
             self._output = request.json
             print("Output is")
-            print(self._output)
+            print(" ".join([str(bit) for bit in self._output.values()]))
 
             return "ok"
 

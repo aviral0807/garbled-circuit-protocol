@@ -146,7 +146,7 @@ class Alice:
             self._output.update({output_wire: self._wire_labels[output_wire].index(self._output_labels[output_wire])})
 
         print("Output is")
-        print(self._output)
+        print(" ".join([str(bit) for bit in self._output.values()]))
 
     def _send_output(self):
         requests.post(url=API_CALL + OUTPUT_URL, json=self._output)

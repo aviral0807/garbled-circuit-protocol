@@ -1,12 +1,12 @@
-  { "name": "1-bit full adder Cin, A, B -> Cout, Sum",
-    "alice": [1, 2],
-    "bob":   [3],
-    "out":   [5,8],
-    "gates": [
-      { "id":4,  "type":"XOR", "in": [2, 3] },
-      { "id":8,  "type":"XOR", "in": [1, 4] },
-      { "id":6,  "type":"AND", "in": [2, 3] },
-      { "id":7,  "type":"AND", "in": [1, 4] },
-      { "id":5, "type":"OR",  "in": [6, 7] }
-    ]
-  }
+{ "name": "1-bit full adder Cin, A, B -> Cout, Sum",
+  "alice": [1, 2],
+  "bob":   [3],
+  "out":   [5,8],
+  "gates": [
+    { "id":4,  "type":"XOR", "in": [2, 3] },
+    { "id":8,  "type":"XOR", "in": [1, 4] },
+    { "id":6,  "type":"AND", "in": [2, 3] },
+    { "id":7,  "type":"AND", "in": [1, 4] },
+    { "id":5, "type":"OR",  "in": [6, 7] }
+  ]
+}
